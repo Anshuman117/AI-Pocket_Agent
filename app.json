@@ -4,7 +4,7 @@
     "slug": "AI-Pocket_Agent",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "aipocketagent",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -15,9 +15,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -32,8 +30,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logo.png",
-          "imageWidth": 200,
+          "image": "./assets/images/icon.png",
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "dark": {
@@ -41,7 +38,20 @@
           }
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "@clerk/expo",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "newArchEnabled": false
+          },
+          "ios": {
+            "newArchEnabled": false
+          }
+        }
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -50,7 +60,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "3a5185ed-ac1a-4027-8e7c-ae92904750c6"
+        "projectId": "593b0bac-4353-4dcc-8633-a8b867b933e0"
       }
     }
   }
