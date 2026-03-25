@@ -200,14 +200,16 @@ useEffect(()=>{
   return (
     <KeyboardAvoidingView
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.screen}
     >
       <FlatList
+      style={styles.messageList}
       contentContainerStyle={[
         styles.listContent,
         { paddingBottom: Math.max(insets.bottom, 12) },
       ]}
+      keyboardShouldPersistTaps="handled"
       data={messages}
       //@ts-ignore
       renderItem={({ item, index }) =>
@@ -316,6 +318,9 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 10,
     paddingTop: 10,
+  },
+  messageList: {
+    flex: 1,
   },
   messageContainer:{
     maxWidth:'75%',

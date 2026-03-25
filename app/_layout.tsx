@@ -10,7 +10,12 @@ export default function RootLayout() {
 "
       tokenCache={tokenCache}
     >
-      <StatusBar style="dark" hidden={false} translucent={false} />
+      <StatusBar
+        style="dark"
+        hidden={false}
+        translucent={false}
+        backgroundColor="#ffffff"
+      />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
       </Stack>
