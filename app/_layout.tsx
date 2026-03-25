@@ -1,5 +1,6 @@
 import { ClerkProvider } from "@clerk/expo";
 import { tokenCache } from "@clerk/expo/token-cache";
+import { StatusBar } from "expo-status-bar";
 import { Stack } from "expo-router";
 
 export default function RootLayout() {
@@ -9,6 +10,7 @@ export default function RootLayout() {
 "
       tokenCache={tokenCache}
     >
+      <StatusBar style="dark" hidden={false} translucent={false} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
       </Stack>

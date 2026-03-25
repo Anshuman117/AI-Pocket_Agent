@@ -1,5 +1,5 @@
 import Color from "@/share/Color";
-import { ActivityIndicator, Dimensions, Image, Platform, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Dimensions, Image, Platform, Text, TouchableOpacity, View } from "react-native";
 import * as WebBrowser from 'expo-web-browser'
 import * as AuthSession from 'expo-auth-session'
 import { useSSO, useUser } from '@clerk/expo'
@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@clerk/expo";
 
 import { doc, setDoc } from "firebase/firestore";
-import { firestore, firestoreDb } from "@/config/FirebaseConfig";
+import { firestoreDb } from "@/config/FirebaseConfig";
 import {  useRouter } from "expo-router";
 
 
@@ -25,11 +25,10 @@ export const useWarmUpBrowser = () => {
 WebBrowser.maybeCompleteAuthSession()
 
 export default function Index() {
-  const { isSignedIn} = useAuth()
+  const { isLoaded, isSignedIn } = useAuth()
   const router=useRouter();
   const {user}=useUser();
   const[loading,setLoading]=useState(true);
-  console.log(user?.primaryEmailAddress?.emailAddress)
 
   useEffect(()=>{
 
@@ -38,10 +37,32 @@ export default function Index() {
      router.replace("/(tabs)/Home");
 
     }
-    if(isSignedIn!=undefined){
+    if(isLoaded){
       setLoading(false);
     }
-  },[isSignedIn])
+  },[isLoaded, isSignedIn, router])
+
+  useEffect(() => {
+    const syncUser = async () => {
+      if (!isSignedIn || !user?.id) {
+        return;
+      }
+
+      await setDoc(
+        doc(firestoreDb, 'users', user.id),
+        {
+          email: user.primaryEmailAddress?.emailAddress ?? '',
+          name: user.fullName ?? '',
+          joinDate: Date.now(),
+          credits: 20,
+        },
+        { merge: true }
+      );
+    };
+
+    void syncUser();
+  }, [isSignedIn, user?.id]);
+
   useWarmUpBrowser()
 
   // Use the `useSSO()` hook to access the `startSSOFlow()` method
@@ -50,44 +71,43 @@ export default function Index() {
 
   const onLoginPress = useCallback(async () => {
     try {
+      setLoading(true);
+
       // Start the authentication process by calling `startSSOFlow()`
-      const { createdSessionId, setActive, signIn, signUp } = await startSSOFlow({
+      const { createdSessionId, setActive } = await startSSOFlow({
         strategy: 'oauth_google',
         // For web, defaults to current path
         // For native, you must pass a scheme, like AuthSession.makeRedirectUri({ scheme, path })
         // For more info, see https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions
-        redirectUrl: AuthSession.makeRedirectUri(),
+        redirectUrl: AuthSession.makeRedirectUri({
+          scheme: 'aipocketagent',
+          path: 'sso-callback',
+        }),
       })
 
-
-      if (user) {
-        await setDoc(doc(firestoreDb, 'users', user.id), {
-          email: user.primaryEmailAddress?.emailAddress,
-          name: user.fullName,
-          joinDate: Date.now(),
-          credits: 20
-        });
-      }
-
       // If sign in was successful, set the active session
-     if (createdSessionId) {
-  setActive!({
-    session: createdSessionId,
-    navigate: async () => {
-      router.replace("/(tabs)/Home")
-    },
-  })
-} else {
+      if (createdSessionId && setActive) {
+        await setActive({
+          session: createdSessionId,
+        });
+        router.replace("/(tabs)/Home");
+      } else {
         // If there is no `createdSessionId`,
         // there are missing requirements, such as MFA
         // See https://clerk.com/docs/guides/development/custom-flows/authentication/oauth-connections#handle-missing-requirements
+        Alert.alert('Sign-in incomplete', 'Clerk did not create a session. Please try again.');
       }
     } catch (err) {
       // See https://clerk.com/docs/guides/development/custom-flows/error-handling
       // for more info on error handling
       console.error(JSON.stringify(err, null, 2))
+      const message =
+        err instanceof Error ? err.message : 'Unable to sign in with Google. Please try again.';
+      Alert.alert('Sign-in failed', message);
+    } finally {
+      setLoading(false);
     }
-  }, [startSSOFlow])
+  }, [router, startSSOFlow])
   return (
     <View
       style={{
@@ -140,7 +160,7 @@ export default function Index() {
         >
           Get Started</Text>
       </TouchableOpacity>}
-      {loading==undefined&&<ActivityIndicator size={"large"}/>}
+      {loading&&<ActivityIndicator size={"large"}/>}
     </View>
   );
 }

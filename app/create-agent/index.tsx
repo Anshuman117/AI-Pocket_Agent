@@ -83,6 +83,7 @@ export default function CreateAgent() {
     <View>
         <Text>Agent/Assistant Name</Text>
         <TextInput placeholder='Agent Name' style={styles.input}
+        placeholderTextColor={Color.GRAY}
         onChangeText={(v)=>setAgentName(v)}
         />
     </View>
@@ -90,6 +91,7 @@ export default function CreateAgent() {
         <Text>Instructions</Text>
         <TextInput 
         placeholder='Ex. You are a professional Gym Trainer'
+        placeholderTextColor={Color.GRAY}
         onChangeText={(v)=>setInstruction(v)}
          style={[styles.input,{height:200,textAlignVertical:'top'}]} multiline={true}/>
     </View>
@@ -116,7 +118,8 @@ const styles = StyleSheet.create({
         fontSize:18,
         marginTop:5,
         paddingTop:15,
-        paddingBottom:15
+        paddingBottom:15,
+        color:Color.BLACK
 
 
     }

@@ -9,6 +9,7 @@ import * as ImagePicker from 'expo-image-picker'
 import { firestoreDb } from '@/config/FirebaseConfig';
 import { doc, setDoc } from 'firebase/firestore';
 import { useUser } from '@clerk/expo';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 type Message = {
   role: string;
   content: string;
@@ -23,6 +24,7 @@ export default function ChatUI() {
    const[file,setFile]=useState();
    const [docId,setDocId]=useState<string|null>();
    const {user}=useUser();
+   const insets = useSafeAreaInsets();
   useEffect(()=>{
     navigation.setOptions({
       headerShown:true,
@@ -196,8 +198,16 @@ useEffect(()=>{
 
 },[messages])
   return (
-    <KeyboardAvoidingView keyboardVerticalOffset={80} behavior={Platform.OS==='android'?'padding':undefined} style={{padding:10,flex:1}}>
+    <KeyboardAvoidingView
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.screen}
+    >
       <FlatList
+      contentContainerStyle={[
+        styles.listContent,
+        { paddingBottom: Math.max(insets.bottom, 12) },
+      ]}
       data={messages}
       //@ts-ignore
       renderItem={({ item, index }) =>
@@ -249,7 +259,12 @@ useEffect(()=>{
         )
       }   
       />
-       <View>
+       <View
+        style={[
+          styles.composerWrapper,
+          { paddingBottom: Math.max(insets.bottom, 12) },
+        ]}
+       >
        {file&&(
         <View style={{
           marginBottom:5,
@@ -274,7 +289,14 @@ useEffect(()=>{
       onPress={PickImage}>
           <Camera size={27}/>
         </TouchableOpacity>
-        <TextInput onChangeText={(v)=>setInput(v)} value={input} style={styles.input} placeholder='Type a message'/>
+        <TextInput
+          onChangeText={(v)=>setInput(v)}
+          value={input}
+          style={styles.input}
+          placeholder='Type a message'
+          placeholderTextColor={Color.GRAY}
+          multiline
+        />
         
         <TouchableOpacity style={{backgroundColor:Color.PRIMARY,padding:7,borderRadius:99}} onPress={onSendMessage}>
           <Send color={Color.WHITE} size={20}/>
@@ -287,6 +309,14 @@ useEffect(()=>{
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: Color.WHITE,
+  },
+  listContent: {
+    paddingHorizontal: 10,
+    paddingTop: 10,
+  },
   messageContainer:{
     maxWidth:'75%',
     marginVertical:4,
@@ -312,9 +342,14 @@ const styles = StyleSheet.create({
   MessageText:{fontSize:16},
   userText:{color:Color.WHITE},
   assistantText:{color:Color.BLACK},
+  composerWrapper: {
+    paddingHorizontal: 10,
+    paddingTop: 8,
+    backgroundColor: Color.WHITE,
+  },
   inputContainer:{
     flexDirection:'row',
-    alignItems:'center',
+    alignItems:'flex-end',
     padding:10,
     borderWidth:1,
     borderRadius:12,
@@ -329,7 +364,10 @@ const styles = StyleSheet.create({
     borderColor:'#ccc',
     backgroundColor:Color.WHITE,
     marginRight:8,
-    paddingHorizontal:15
+    paddingHorizontal:15,
+    minHeight: 46,
+    maxHeight: 110,
+    textAlignVertical: 'top',
   }
   
 })
